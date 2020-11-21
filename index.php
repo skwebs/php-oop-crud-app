@@ -1,3 +1,10 @@
+<?php
+session_start();
+if(isset($_SESSION["sql"])){
+	echo "SQL : ".$_SESSION["sql"];
+	unset($_SESSION["sql"]);
+}
+?>
 <!DOCTYPE html>
 <html lang="en-IN">
 

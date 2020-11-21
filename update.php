@@ -1,4 +1,5 @@
 <?php
+session_start();
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 include_once 'classes/class.Crud2.php';
@@ -23,6 +24,7 @@ if (isset($_POST["action"]) && $_POST["action"] == "update") {
         unset($_POST['id']);
         $res = $db->update('reg', $_POST, 'id=' . $id); // Table name, column names and values, WHERE conditions
         if ($res) {
+            $_SESSION["sql"] = $db->getSql();
             header("Location: ./");
         }
     }

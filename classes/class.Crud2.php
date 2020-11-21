@@ -58,12 +58,17 @@ public function __destruct() {
     public function insert($table, $params = array()) {
         // Check to see if the table exists
         if ($this->tableExists($table)) {
-            $sql = "INSERT INTO " . $table . " (" . implode(", ", array_keys($params)) . ") VALUES ('" . implode("', '", $params) . "')";
-            $this->myQuery = $sql; // Pass back the SQL
-            // Make the query to insert to the database
-            try {
-                $stmt = $this->pdo->prepare($sql);
+			try{
+				$sql = "INSERT INTO `$table` (`".implode('`, `', array_keys($params))."`) VALUES (:".implode(', :', array_keys($params))." )";
+				$this->myQuery = $sql; // Pass back the SQL
+				
+				$stmt = $this->pdo->prepare($sql);
+					
+				foreach ($params as $key => $value) {
+				    $stmt->bindValue(':' . $key, $value);
+				}
                 $stmt->execute();
+                
                 array_push($this->result, $this->pdo->lastInsertId());
                 return true; // The data has been inserted
             } catch (PDOException $exception) {
@@ -105,23 +110,77 @@ public function __destruct() {
             return false; // Table does not exist
         }
     }
+/*
+public function Update($fields, $id) {
+    try{
+	        $st = "";
+	        $counter = 1;
+	        $total_fields = count($fields);
+	        foreach ($fields as $key => $value) {
+	            if ($counter === $total_fields) {
+	                $set = "`$key` = :" . $key;
+	                $st = $st . $set;
+	            }
+	            else {
+	                $set = " `$key` = :" . $key . ",";
+	                $st = $st . $set;
+	                $counter++;
+	            }
+	        }
+	        $sql = "";
+	        $sql .= "UPDATE `$this->table` SET " . $st;
+	        $sql .= " WHERE `id` = " . $id;
+	        //echo $sql;
+	        $stmt = $this->connect()->prepare($sql);
+	
+	        foreach ($fields as $key => $value) {
+	            $stmt->bindValue(':' . $key, $value);
+	        }
+	
+	        $stmtExec = $stmt->execute();
+	
+	        if ($stmtExec) {
+		         return true ; // header("location:index.php");
+	        }
+	        else {
+	            return false ;
+	        }
+    }catch(PDOException $e){
+	        return "Error(s): $e->getMessage()";
+    }
+}
 
+*/
     // Function to update row in database
     public function update($table, $params = array(), $where) {
         // Check to see if table exists
         if ($this->tableExists($table)) {
-            // Create Array to hold all the columns to update
-            $args = array();
-            foreach ($params as $field => $value) {
-                // Seperate each column out with it's corresponding value
-                $args[] = $field . "='" . $value . "'";
-            }
-            // Create the query
-            $sql = 'UPDATE ' . $table . ' SET ' . implode(',', $args) . ' WHERE ' . $where;
-            // Make query to database
+			$st = "";
+			$counter = 1;
+			$total_fields = count($params);
+			foreach ($params as $key => $value) {
+			    if ($counter === $total_fields) {
+			        $set = "`$key` = :" . $key;
+			        $st = $st . $set;
+			    }
+			    else {
+			        $set = " `$key` = :" . $key . ",";
+			        $st = $st . $set;
+			        $counter++;
+			    }
+			}
+			$sql = "";
+			$sql .= "UPDATE `$table` SET " . $st;
+			$sql .=  " WHERE " . $where;
+			//$sql .= " WHERE `id` = " . $id;
+			// Make query to database
             $this->myQuery = $sql; // Pass back the SQL
+			
             try {
                 $stmt = $this->pdo->prepare($sql);
+                foreach ($params as $key => $value) {
+	                $stmt->bindValue(':' . $key, $value);
+                }
                 $stmt->execute();
                 array_push($this->result, $stmt->rowCount());
                 return true; // Update has been successful

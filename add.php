@@ -1,4 +1,5 @@
 <?php
+session_start();
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 if (isset($_POST["action"]))
@@ -17,9 +18,9 @@ if (isset($_POST["action"]))
         {
             unset($_POST["action"]);
             $res = $db->insert('reg', $_POST); // Table name, column names and respective values
-            if ($res)
-            {
-                header("Location: ./");
+            if ($res){
+	            $_SESSION["sql"] = $db->getSql();
+               header("Location: ./");
             }
         }
 
